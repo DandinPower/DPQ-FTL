@@ -8,10 +8,8 @@ load_dotenv()
 
 RNG = np.random.default_rng(100)
 LR = float(os.getenv('LR'))
-
+GAMMA = float(os.getenv('GAMMA'))
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-
 
 class ValueNetworks:
     def __init__(self):
@@ -28,7 +26,19 @@ class ValueNetworks:
             param_group['lr'] = lr
     
     def Optimize(self, batchData):
-        pass
+        self.optimizer.zero_grad()
+        states = torch.tensor([d[0] for d in batchData], dtype=torch.float32).to(DEVICE)
+        actions = torch.tensor([d[1] for d in batchData], dtype=torch.long).to(DEVICE)
+        rewards = torch.tensor([d[2] for d in batchData], dtype=torch.float32).to(DEVICE)
+        next_states = torch.tensor([d[3] for d in batchData], dtype=torch.float32).to(DEVICE)
+        model_output = self.net(states)
+        target_output = self.targetNet(next_states).detach()
+        model_output = model_output.gather(1, actions.unsqueeze(1)).squeeze()
+        next_state_values, _ = target_output.max(dim=1)
+        expected_q_values = (next_state_values * GAMMA) + rewards
+        loss = self._loss(expected_q_values, model_output)
+        loss.backward()
+        self.optimizer.step()
 
     def GetModelAction(self, state, epsilon):
         if RNG.uniform() < epsilon:
