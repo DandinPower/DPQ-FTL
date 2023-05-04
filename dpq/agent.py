@@ -18,6 +18,7 @@ UPDATE_RATE = int(os.getenv('UPDATE_RATE'))
 TRAIN_HISTORY_PATH = os.getenv('TRAIN_HISTORY_PATH')
 MODEL_WEIGHT_PATH = os.getenv('MODEL_WEIGHT_PATH')
 TRAIN_MODEL_WEIGHT = os.getenv('TRAIN_MODEL_WEIGHT')
+SAVE_PERIOD = int(os.getenv('SAVE_PERIOD'))
 
 class Agent:
     def __init__(self) -> None:
@@ -37,7 +38,9 @@ class Agent:
             action = self.valueNetworks.GetModelAction(state, self.hyperParameter._epsilon)
             reward, nextState = self.hostInterface.StepByAction(action)
             rewardSum += reward
-            state = self.statePreprocess.NewReq(nextState)
+            nextState = self.statePreprocess.NewReq(nextState)
+            self.replayBuffer.Add(state, action, reward, nextState)
+            state = nextState
             if episode > WARM_UP_EPISODES:
                 X = self.replayBuffer.GetBatchData(BATCH_SIZE)
                 self.valueNetworks.Optimize(X)
@@ -52,10 +55,12 @@ class Agent:
         for i in train_iter:
             rewardSum = self.Episode(i)
             self.hyperParameter.UpdateEpsilon(i)
-            if i > WARM_UP_EPISODES:
+            if i >= WARM_UP_EPISODES:
                 self.hyperParameter.UpdateLearningRate(i - WARM_UP_EPISODES + 1)
                 self.valueNetworks.UpdateOptimizerLR(self.hyperParameter._lr)
             train_iter.set_postfix_str(f"reward_sum: {rewardSum}")
-            self.valueNetworks.SaveWeight(f'{TRAIN_MODEL_WEIGHT}_{i}.pth')
+            if i % SAVE_PERIOD == 0:
+                self.valueNetworks.SaveWeight(f'{TRAIN_MODEL_WEIGHT}_{i}.pth')
+        self.valueNetworks.SaveWeight(f'{TRAIN_MODEL_WEIGHT}_finish.pth')
         self.trainHistory.ShowHistory(TRAIN_HISTORY_PATH)
 

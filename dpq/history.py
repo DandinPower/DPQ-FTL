@@ -39,5 +39,5 @@ class TrainHistory:
         lines.append(ax2.plot(self.epsilon, label="epsilon", color="C3")[0])
         labs = [l.get_label() for l in lines]
         ax1.legend(lines, labs, loc=3)
-        plt.savefig(path)
+        plt.savefig(path, dpi = 300)
         plt.clf()
