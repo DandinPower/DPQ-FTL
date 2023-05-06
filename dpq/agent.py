@@ -41,7 +41,7 @@ class Agent:
             nextState = self.statePreprocess.NewReq(nextState)
             self.replayBuffer.Add(state, action, reward, nextState)
             state = nextState
-            if episode > WARM_UP_EPISODES:
+            if episode >= WARM_UP_EPISODES:
                 X = self.replayBuffer.GetBatchData(BATCH_SIZE)
                 self.valueNetworks.Optimize(X)
             if step % UPDATE_RATE == 0:
