@@ -62,7 +62,7 @@ class ValueNetworks:
             
     def SaveWeight(self, path):
         torch.save(self.net.state_dict(), path)
-        print("Model saved successfully.")
+        # print("Model saved successfully.")
 
     def LoadWeight(self, path):
         self.net.load_state_dict(torch.load(path))

@@ -7,12 +7,14 @@ class TrainHistory:
         self.rewards = []
         self.actions = []
         self.epsilon = []
+        self.workloadIndexes = []
 
     def AddHistory(self, datas):
         self.episodes.append(datas[0])
         self.rewards.append(datas[1])
         self.actions.append(datas[2])
         self.epsilon.append(datas[3])
+        self.workloadIndexes.append(datas[4])
 
     @staticmethod
     def _moving_average(x, periods=5):
@@ -25,9 +27,9 @@ class TrainHistory:
     def WriteHistory(self, path):
         with open(path, 'w') as file:
             # Iterate over the list
-            for episode, reward in zip(self.episodes, self.rewards):
+            for episode, index, epsilon, reward in zip(self.episodes, self.workloadIndexes, self.epsilon, self.rewards):
                 # Write each item to a new line in the file
-                file.write(f'Episode: {episode}, Reward: {reward}\n')
+                file.write(f'Episode: {str(episode).ljust(5)}, 'f'Workload: {str(index).ljust(2)}, 'f'Epsilon: {str(f"{epsilon:.2f}").ljust(4)}, ' f'Reward: {str(f"{reward:.2f}").ljust(12)}\n')
 
     def ShowHistory(self, path):
         fig = plt.figure(1, figsize=(15, 7))

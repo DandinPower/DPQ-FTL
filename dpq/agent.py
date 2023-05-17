@@ -50,8 +50,8 @@ class MultiWorkloadScheduler:
         if self.numOfWorkload == 0:
             raise IndexError('There are no workload available')
         index = episode % self.numOfWorkload
-        print(f'Workload Index: {index}')
-        return self.hostInterfaces[index], self.statePreProcesses[index]
+        # print(f'Workload Index: {index}')
+        return self.hostInterfaces[index], self.statePreProcesses[index], index
 
 class Agent:
     def __init__(self) -> None:
@@ -64,7 +64,7 @@ class Agent:
         self.workloadScheduler.AddWorkload(TRACE_2_PATH, TRACE_2_LENGTH, BLOCK_NUM_2, LBA_FREQ_2_PATH)
     
     def Episode(self, episode):
-        hostInterface, statePreprocess = self.workloadScheduler.GetWorkload(episode)
+        hostInterface, statePreprocess, index = self.workloadScheduler.GetWorkload(episode)
         state = hostInterface.NewEpisode()
         statePreprocess.NewEpisode()
         state = statePreprocess.NewReq(state)
@@ -81,22 +81,22 @@ class Agent:
                 self.valueNetworks.Optimize(X)
             if step % UPDATE_RATE == 0:
                 self.valueNetworks.UpdateTargetNet()
-        self.trainHistory.AddHistory([episode, rewardSum, MAX_STEP, self.hyperParameter._epsilon])
-        return rewardSum
+        self.trainHistory.AddHistory([episode, rewardSum, MAX_STEP, self.hyperParameter._epsilon, index])
+        self.trainHistory.WriteHistory(TRAIN_HISTORY_REPORT_PATH)
+        return rewardSum, index
     
     def Train(self):
         self.valueNetworks.LoadWeight(MODEL_WEIGHT_PATH)
         train_iter = tqdm(np.arange(EPISODES))
         for i in train_iter:
-            rewardSum = self.Episode(i)
+            rewardSum, index = self.Episode(i)
             self.hyperParameter.UpdateEpsilon(i)
             if i >= WARM_UP_EPISODES:
                 self.hyperParameter.UpdateLearningRate(i - WARM_UP_EPISODES + 1)
                 self.valueNetworks.UpdateOptimizerLR(self.hyperParameter._lr)
-            train_iter.set_postfix_str(f"reward_sum: {rewardSum}")
+            train_iter.set_postfix_str(f"reward_sum: {rewardSum}; workload_index: {index}")
             if i % SAVE_PERIOD == 0:
                 self.valueNetworks.SaveWeight(f'{TRAIN_MODEL_WEIGHT}_{i}.pth')
         self.valueNetworks.SaveWeight(f'{TRAIN_MODEL_WEIGHT}_finish.pth')
         self.trainHistory.ShowHistory(TRAIN_HISTORY_PATH)
-        self.trainHistory.WriteHistory(TRAIN_HISTORY_REPORT_PATH)
 
