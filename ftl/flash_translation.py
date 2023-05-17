@@ -3,7 +3,7 @@ from .nand.block import BlockType
 from .nand.nand_controller import NandController
 from .address.address_translation import AddressTranslation
 from .gc.garbage_collection import GarbageCollection
-from .pretrain.value_net import ValueNet
+# from .pretrain.value_net import ValueNet
 import random
 from dotenv import load_dotenv
 import os
@@ -15,12 +15,12 @@ ACTION_TYPE = os.getenv('ACTION_TYPE')
 ACTIVE_GC_PERIOD = int(os.getenv('ACTIVE_GC_PERIOD'))
 
 class FlashTranslation:
-    def __init__(self):
+    def __init__(self, blockNum):
         self.dataCacheManage = DataCacheManage()
-        self.nandController = NandController()
+        self.nandController = NandController(blockNum)
         self.addressTranslation = AddressTranslation()
         self.garbageCollection = GarbageCollection(self.nandController, self.addressTranslation)
-        self.valueNet = ValueNet()
+        # self.valueNet = ValueNet()
         self.strategyType = None
 
     def Reset(self):
@@ -41,9 +41,9 @@ class FlashTranslation:
             action = random.choice(ACTION_SPACE)
         elif self.strategyType == 'Statistic':
             action = ACTION_SPACE[request.action]
-        elif self.strategyType == 'PreTrain':
-            predict = self.valueNet.NewReq(request)
-            action = ACTION_SPACE[predict]
+        # elif self.strategyType == 'PreTrain':
+        #     predict = self.valueNet.NewReq(request)
+        #     action = ACTION_SPACE[predict]
         return action
     
     # return actual write bytes

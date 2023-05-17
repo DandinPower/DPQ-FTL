@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-LBA_FREQ_PATH = os.getenv('LBA_FREQ_PATH')
-
 # Define a function to standardize the frequency values
 def standardize(frequency_values):
     mean = statistics.mean(frequency_values)
@@ -13,10 +11,10 @@ def standardize(frequency_values):
     standardized_values = [(x - mean) / stdev for x in frequency_values]
     return standardized_values
 
-def GetLbaFreqDict():
+def GetLbaFreqDict(path):
     # Load the LBA frequency statistics from the CSV file
     lba_frequencies = {}
-    with open(LBA_FREQ_PATH, newline='') as csvfile:
+    with open(path, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             lba = row['LBA']

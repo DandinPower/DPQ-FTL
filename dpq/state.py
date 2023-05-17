@@ -1,27 +1,23 @@
 from sklearn.preprocessing import StandardScaler
 from ftl.pretrain.lba_dict import GetLbaFreqDict
-from .q_model import QModel
 import pandas as pd
 import numpy as np
-from dotenv import load_dotenv
-import os
-load_dotenv()
-
-TRACE_PATH = os.getenv('TRACE_PATH')
 
 class StatePreprocess:
-    def __init__(self) -> None:
+    def __init__(self, tracePath, lbaFreqPath) -> None:
+        self.tracePath = tracePath
+        self.lbaFreqPath = lbaFreqPath
         self.Initialize()
     
     def Initialize(self):
         self.scalerLbaDiff = StandardScaler()
         self.scalerBytes = StandardScaler()
         self.prevLba = 0
-        self.lbaFreqDict = GetLbaFreqDict()
+        self.lbaFreqDict = GetLbaFreqDict(self.lbaFreqPath)
         self.Standardize()
 
     def Standardize(self):
-        data = pd.read_csv(TRACE_PATH, header=None, dtype=np.float64).values
+        data = pd.read_csv(self.tracePath, header=None, dtype=np.float64).values
         data[1:, 2] = np.diff(data[:, 2])
         data[0, 2] = 0
         data[:, 2] = self.scalerLbaDiff.fit_transform(data[:, 2].reshape(-1, 1)).flatten()

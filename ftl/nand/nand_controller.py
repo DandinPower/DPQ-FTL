@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 load_dotenv()
 
 LBA_BYTES = int(os.getenv('LBA_BYTES'))
-BLOCK_NUM = int(os.getenv('BLOCK_NUM'))
 NUMS_OF_PAGE_IN_BLOCK = int(os.getenv('NUMS_OF_PAGE_IN_BLOCK'))
 ACTIVE_GC_WAF_FULL_RATIO = float(os.getenv('ACTIVE_GC_WAF_FULL_RATIO'))
 MA_PERIOD = int(os.getenv('MA_PERIOD'))
@@ -53,9 +52,10 @@ class WafRecorder:
         return self.history[-1]
 
 class NandController:
-    def __init__(self):
+    def __init__(self, blockNum):
+        self.blockNum = blockNum
         self.blocks = []
-        self.freeBlockIndexes = deque([i for i in range(BLOCK_NUM)]) #寫滿pop掉, gc後append
+        self.freeBlockIndexes = deque([i for i in range(self.blockNum)]) #寫滿pop掉, gc後append
         self.currentHotBlockIndex = None 
         self.currentColdBlockIndex = None 
         self.distributionCounter = Counter()
@@ -66,7 +66,7 @@ class NandController:
     def Reset(self):
         for block in self.blocks:
             block.Reset()
-        self.freeBlockIndexes = deque([i for i in range(BLOCK_NUM)])
+        self.freeBlockIndexes = deque([i for i in range(self.blockNum)])
         self.currentHotBlockIndex = None 
         self.currentColdBlockIndex = None 
         self.distributionCounter = Counter()
@@ -75,7 +75,7 @@ class NandController:
 
     def InitializeBlocks(self):
         PrintLog('Build Virtual Blocks...')
-        for i in tqdm(range(BLOCK_NUM)):
+        for i in tqdm(range(self.blockNum)):
             self.blocks.append(Block(i))
 
     def ClearFreeBlockIndex(self, type):
@@ -91,7 +91,7 @@ class NandController:
         return tempBlocks[0].blockIndex
     
     def GetFreeSpaceRatio(self):
-        return len(self.freeBlockIndexes) / BLOCK_NUM
+        return len(self.freeBlockIndexes) / self.blockNum
         
     # lbas為取出來的single logical Page, type為寫入的Block種類 (需使用BlockType Enum)
     def Program(self, lbas, type):
@@ -145,7 +145,7 @@ class NandController:
     
     # not inefficient 或許改成每Estimate waf step去檢查一次 然後清掉所有符合條件的block
     def GetGCBLock(self):
-        fullInvalidBlockIndexes = [item for i, item in enumerate(range(BLOCK_NUM)) if i not in self.freeBlockIndexes and self.blocks[i].invalidPage / NUMS_OF_PAGE_IN_BLOCK >= ACTIVE_GC_WAF_FULL_RATIO] 
+        fullInvalidBlockIndexes = [item for i, item in enumerate(range(self.blockNum)) if i not in self.freeBlockIndexes and self.blocks[i].invalidPage / NUMS_OF_PAGE_IN_BLOCK >= ACTIVE_GC_WAF_FULL_RATIO] 
         return fullInvalidBlockIndexes
 
     # 計算目前狀態的reward跟waf
@@ -188,7 +188,7 @@ class NandController:
     # 每一個Estimate週期執行一次
     def EstimateStatus(self):
         # 取得所有寫滿的blockIndex
-        fullBlockIndexes = [item for i, item in enumerate(range(BLOCK_NUM)) if i not in self.freeBlockIndexes]
+        fullBlockIndexes = [item for i, item in enumerate(range(self.blockNum)) if i not in self.freeBlockIndexes]
         self.UpdateBlockWAFDistribution(fullBlockIndexes)
         self.UpdateBlockPenaltyCount((fullBlockIndexes))
         reward, waf = self.GetRewardAndWAF(fullBlockIndexes)

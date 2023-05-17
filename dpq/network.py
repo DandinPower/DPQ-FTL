@@ -1,4 +1,4 @@
-from .q_model import QModel
+from .q_model import QModel, QModel_Deep
 from .buffer import Transition
 import numpy as np
 import torch 
@@ -11,11 +11,20 @@ RNG = np.random.default_rng(100)
 LR = float(os.getenv('LR'))
 GAMMA = float(os.getenv('GAMMA'))
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+MODEL_TYPE = os.getenv('MODEL_TYPE')
+
+def GetModelByType(type):
+    if MODEL_TYPE == 'deep':
+        return QModel_Deep()
+    elif MODEL_TYPE == 'normal':
+        return QModel()
 
 class ValueNetworks:
     def __init__(self):
-        self.net = QModel().to(DEVICE).train()
-        self.targetNet = QModel().to(DEVICE).train()
+        self.net = GetModelByType(MODEL_TYPE)
+        self.net.to(DEVICE).train()
+        self.targetNet = GetModelByType(MODEL_TYPE)
+        self.targetNet.to(DEVICE).train()
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=LR)
         self.lossFn = torch.nn.SmoothL1Loss()
 

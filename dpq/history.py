@@ -21,6 +21,13 @@ class TrainHistory:
         cumsum = np.cumsum(np.insert(x, 0, 0)) 
         res = (cumsum[periods:] - cumsum[:-periods]) / periods
         return np.hstack([x[:periods-1], res])
+    
+    def WriteHistory(self, path):
+        with open(path, 'w') as file:
+            # Iterate over the list
+            for episode, reward in zip(self.episodes, self.rewards):
+                # Write each item to a new line in the file
+                file.write(f'Episode: {episode}, Reward: {reward}\n')
 
     def ShowHistory(self, path):
         fig = plt.figure(1, figsize=(15, 7))

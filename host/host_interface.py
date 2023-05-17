@@ -1,20 +1,14 @@
 from .host_request_queue import HostRequestQueue, HostRequestQueueAction
 from ftl.flash_translation import FlashTranslation
-from dotenv import load_dotenv
-import os
-load_dotenv()
-
-TRACE_PATH = os.getenv('TRACE_PATH')
-TRACE_LENGTH = int(os.getenv('TRACE_LENGTH'))
 
 class HostInterface: 
-    def __init__(self):
+    def __init__(self, tracePath, traceLength, blockNum):
         #self.hostRequestQueue = HostRequestQueue()
         self.episode = 0
         self.step = 0
         self.hostRequestQueueAction = HostRequestQueueAction()
-        self.hostRequestQueueAction.LoadTrace(TRACE_PATH, TRACE_LENGTH)
-        self.flashTranslation = FlashTranslation()
+        self.hostRequestQueueAction.LoadTrace(tracePath, traceLength)
+        self.flashTranslation = FlashTranslation(blockNum)
         self.currentRequest = None
 
     # reset everything
