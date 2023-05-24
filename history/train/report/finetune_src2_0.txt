@@ -20,3 +20,6 @@ Episode: 18   , Workload: 0 , Epsilon: 0.18, Reward: 605560.68
 Episode: 19   , Workload: 0 , Epsilon: 0.18, Reward: 626164.50   
 Episode: 20   , Workload: 0 , Epsilon: 0.18, Reward: 665601.81   
 Episode: 21   , Workload: 0 , Epsilon: 0.18, Reward: 1154087.03  
+Episode: 22   , Workload: 0 , Epsilon: 0.17, Reward: 172953.06   
+Episode: 23   , Workload: 0 , Epsilon: 0.17, Reward: 895112.64   
+Episode: 24   , Workload: 0 , Epsilon: 0.17, Reward: 653114.23   
