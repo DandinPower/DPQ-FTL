@@ -1,0 +1,14 @@
+Episode: 0    , Workload: 0 , Epsilon: 0.20, Reward: 929734.00   
+Episode: 1    , Workload: 0 , Epsilon: 0.20, Reward: 945803.07   
+Episode: 2    , Workload: 0 , Epsilon: 0.20, Reward: 1045533.57  
+Episode: 3    , Workload: 0 , Epsilon: 0.20, Reward: 949342.84   
+Episode: 4    , Workload: 0 , Epsilon: 0.20, Reward: 946278.62   
+Episode: 5    , Workload: 0 , Epsilon: 0.19, Reward: 986269.18   
+Episode: 6    , Workload: 0 , Epsilon: 0.19, Reward: 897413.83   
+Episode: 7    , Workload: 0 , Epsilon: 0.19, Reward: 1081110.82  
+Episode: 8    , Workload: 0 , Epsilon: 0.19, Reward: 987058.01   
+Episode: 9    , Workload: 0 , Epsilon: 0.19, Reward: 982472.76   
+Episode: 10   , Workload: 0 , Epsilon: 0.19, Reward: 1062414.18  
+Episode: 11   , Workload: 0 , Epsilon: 0.19, Reward: 922467.84   
+Episode: 12   , Workload: 0 , Epsilon: 0.19, Reward: 1095399.42  
+Episode: 13   , Workload: 0 , Epsilon: 0.18, Reward: 884335.38   

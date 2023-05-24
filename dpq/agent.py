@@ -61,7 +61,7 @@ class Agent:
         self.hyperParameter = HyperParameter()
         self.workloadScheduler = MultiWorkloadScheduler()
         self.workloadScheduler.AddWorkload(TRACE_PATH, TRACE_LENGTH, BLOCK_NUM, LBA_FREQ_PATH)
-        self.workloadScheduler.AddWorkload(TRACE_2_PATH, TRACE_2_LENGTH, BLOCK_NUM_2, LBA_FREQ_2_PATH)
+        # self.workloadScheduler.AddWorkload(TRACE_2_PATH, TRACE_2_LENGTH, BLOCK_NUM_2, LBA_FREQ_2_PATH)
     
     def Episode(self, episode):
         hostInterface, statePreprocess, index = self.workloadScheduler.GetWorkload(episode)
