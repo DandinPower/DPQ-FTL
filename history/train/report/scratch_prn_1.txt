@@ -1,0 +1,4 @@
+Episode: 0    , Workload: 0 , Epsilon: 0.95, Reward: 2074789.70  
+Episode: 1    , Workload: 0 , Epsilon: 0.95, Reward: 2254894.90  
+Episode: 2    , Workload: 0 , Epsilon: 0.94, Reward: 1779931.83  
+Episode: 3    , Workload: 0 , Epsilon: 0.93, Reward: 2054037.90  
