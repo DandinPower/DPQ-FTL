@@ -1,4 +1,6 @@
 from .q_model import QModel, QModel_Deep
+from torch.cuda import amp
+from torch import autocast
 from .buffer import Transition
 import numpy as np
 import torch 
@@ -12,12 +14,21 @@ LR = float(os.getenv('LR'))
 GAMMA = float(os.getenv('GAMMA'))
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 MODEL_TYPE = os.getenv('MODEL_TYPE')
+PRECISION = os.getenv('PRECISION')
 
 def GetModelByType(type):
     if MODEL_TYPE == 'deep':
         return QModel_Deep()
     elif MODEL_TYPE == 'normal':
         return QModel()
+    
+def GetModelPrecision(type):
+    if type == 'fp32':
+        return torch.float32 
+    elif type == 'fp16':
+        return torch.float16 
+    elif type == 'bp16':
+        return torch.bfloat16
 
 class ValueNetworks:
     def __init__(self):
@@ -27,6 +38,7 @@ class ValueNetworks:
         self.targetNet.to(DEVICE).train()
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=LR)
         self.lossFn = torch.nn.SmoothL1Loss()
+        self.scaler = amp.GradScaler()
 
     def UpdateTargetNet(self):
         self.targetNet.load_state_dict(self.net.state_dict())
@@ -42,14 +54,26 @@ class ValueNetworks:
         action_batch = torch.cat(batchData.action)
         reward_batch = torch.cat(batchData.reward)
         next_state_batch = torch.cat(batchData.nextState)
-        model_output = self.net(state_batch)
-        model_output = model_output.gather(1, action_batch.unsqueeze(1)).squeeze()
-        target_output = self.targetNet(next_state_batch).max(1)[0]
-        expected_q_values = (target_output * GAMMA) + reward_batch
-        loss = self.lossFn(expected_q_values, model_output)
-        loss.backward()
-        self.optimizer.step()
+        
+        with autocast(device_type='cuda', dtype=GetModelPrecision(PRECISION)):
+            model_output = self.net(state_batch)
+            model_output = model_output.gather(1, action_batch.unsqueeze(1)).squeeze()
+            target_output = self.targetNet(next_state_batch).max(1)[0]
+            expected_q_values = (target_output * GAMMA) + reward_batch
+            loss = self.lossFn(expected_q_values, model_output)
+        self.scaler.scale(loss).backward()
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
 
+        # original training step
+        # model_output = self.net(state_batch)
+        # model_output = model_output.gather(1, action_batch.unsqueeze(1)).squeeze()
+        # target_output = self.targetNet(next_state_batch).max(1)[0]
+        # expected_q_values = (target_output * GAMMA) + reward_batch
+        # loss = self.lossFn(expected_q_values, model_output)
+        # loss.backward()
+        # self.optimizer.step()
+        
     def GetModelAction(self, state, epsilon):
         if RNG.uniform() < epsilon:
             return random.choice([0, 1])
